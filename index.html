@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Focus Interaction</title>
+    
+    <!-- [自定义修改：引入 Google Fonts] -->
+    <!-- 引入 Commissioner 字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* [自定义修改：引入繁体字体] */
+        @font-face {
+            font-family: 'SourceHanSansTW';
+            src: url('font/Source Han Sans HC VF ExtraLight.ttf') format('truetype');
+            font-weight: 200;
+            font-style: normal;
+        }
+        
+        /* =================================================================
+           [自定义修改 1：全局字体与颜色配置]
+           在这里集中管理整个网站的基础风格
+           ================================================================= */
+        :root {
+            /* [背景色] 深色模式 (初始状态) */
+            --bg-color: #050505;          
+            /* [文字颜色] 深色模式主文字 */
+            --text-main: #ffffff;         
+            /* [文字颜色] 深色模式辅助文字 (日期、副标题等) */
+            --text-sub: rgba(255, 255, 255, 0.7); 
+            
+            /* [背景色] 浅色模式 (向下滚动后) */
+            --bg-light: #f2f2f2;          
+            /* [文字颜色] 浅色模式主文字 */
+            --text-main-light: #111111;   
+            /* [文字颜色] 浅色模式辅助文字 */
+            --text-sub-light: #666666;    
+
+            /* [字体设置] */
+            --main-font: 'Helvetica Neue', Arial, sans-serif; 
+            
+            /* [玻璃态变量] */
+            --glass-bg: rgba(20, 20, 20, 0.85); 
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background-color: var(--bg-color);
+            font-family: var(--main-font);
+            color: var(--text-main);
+            overflow-x: hidden;
+            transition: background-color 1.5s cubic-bezier(0.16, 1, 0.3, 1), color 1s ease;
+        }
+
+        /* 浅色模式样式覆盖 */
+        body.light-mode { background-color: var(--bg-light); color: var(--text-main-light); }
+        body.light-mode .section-title-large, body.light-mode .work-title { color: var(--text-main-light); }
+        body.light-mode .work-category { color: var(--text-sub-light); }
+        body.light-mode .section-header { border-bottom-color: rgba(0,0,0,0.1); }
+        body.light-mode .dropdown-menu { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(0,0,0,0.1); }
+        body.light-mode .dropdown-item { color: #666; }
+        body.light-mode .dropdown-item:hover { color: #000; background: rgba(0,0,0,0.05); }
+
+        a { text-decoration: none; color: inherit; cursor: pointer; }
+
+        /* --- HEADER (导航栏) --- */
+        header {
+            position: fixed; top: 0; left: 0; width: 100%;
+            /* [自定义修改 2：Header 位置与高度] */
+            padding: 20px 5vw; 
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 1000;
+            mix-blend-mode: difference; 
+            color: white; 
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease;
+            
+            /* [自定义修改 3：Header 透明度] */
+            opacity: 0.9; 
+        }
+        
+        header.ui-hidden { transform: translateY(-100%); opacity: 0; pointer-events: none; }
+
+        .logo { 
+            font-weight: 200; 
+            font-size: 24px; 
+            letter-spacing: 1px; 
+            background: transparent; 
+            display: block; 
+            /* [自定义修改：Logo 字体 - 使用繁体字体] */
+            font-family: 'SourceHanSansTW', 'Commissioner', sans-serif;
+        }
+
+        .nav { display: flex; gap: 30px; align-items: center; transform: scale(0.9); transform-origin: right center; }
+        .nav-item-wrapper { position: relative; height: 40px; display: flex; align-items: center; }
+
+        .nav-link {
+            font-size: 14px; font-weight: 500; letter-spacing: 0.5px;
+            color: rgba(255,255,255,0.8); transition: opacity 0.3s ease;
+            position: relative; padding: 0; background: transparent !important; border: none !important; 
+        }
+
+        .nav-link:hover, .nav-link.active { color: #fff; opacity: 1; }
+        .nav-link::after {
+            content: ''; position: absolute; bottom: -4px; left: 0; width: 0%; height: 1px; background: #fff; transition: width 0.3s ease;
+        }
+        .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+        /* --- DROPDOWN (下拉菜单) --- */
+        .dropdown {
+            position: absolute; top: 100%; left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            padding-top: 8px; opacity: 0; visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .nav-item-wrapper:hover .dropdown { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+
+        .dropdown-menu {
+            background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            /* [自定义修改 4：下拉菜单宽度] */
+            min-width: 70px; 
+            padding: 0; 
+            border: 1px solid var(--glass-border); border-radius: 0; 
+            display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.5); mix-blend-mode: normal; 
+        }
+
+        .dropdown-item {
+            /* [自定义修改 5：下拉菜单文字大小] */
+            font-size: 9px; 
+            text-transform: uppercase; letter-spacing: 1px;
+            color: rgba(255,255,255,0.6); 
+            /* [自定义修改 6：下拉项间距] */
+            padding: 10px 20px; 
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.2s; border-radius: 0; 
+        }
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-item:hover { color: #fff; background: rgba(255,255,255,0.1); padding-left: 24px; }
+
+        /* --- HERO SECTION (背景图/视频) --- */
+        .hero { 
+            height: 100vh; width: 100%; position: relative; 
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; background-color: #050505; 
+        }
+
+        .hero-bg-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; overflow: hidden;
+        }
+
+        .hero-media {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            /* [自定义修改 7：背景图缩放比例] */
+            object-fit: cover; transform: scale(1.05);
+            transition: opacity 0.8s ease; 
+        }
+        .hero-media.hidden { opacity: 0; pointer-events: none; }
+
+        /* 底层：模糊层 */
+        .blur-layer-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            /* [自定义修改 8：背景模糊度与亮度] */
+            filter: blur(18px) brightness(0.9); 
+            z-index: 1;
+        }
+
+        /* 中层：噪点层 */
+        .hero-noise-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; 
+            opacity: 0.15; pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
+        }
+
+        /* 顶层：清晰层 (鼠标擦拭效果) */
+        .clear-layer-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3;
+            --mouse-x: 50vw; --mouse-y: 50vh;
+            
+            /* 鼠标遮罩范围 */
+            -webkit-mask-image: radial-gradient(circle 400px at var(--mouse-x) var(--mouse-y), black 0%, transparent 100%);
+            mask-image: radial-gradient(circle 400px at var(--mouse-x) var(--mouse-y), black 0%, transparent 100%);
+            
+            /* [自定义修改 9：顶部导航保护区高度] */
+            clip-path: inset(72px 0 0 0);
+            
+            will-change: mask-image, -webkit-mask-image;
+        }
+
+        /* [新增] Hero 底部渐变过渡层 */
+        .hero-gradient-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            /* [自定义修改] 渐变高度：控制过渡的柔和程度 */
+            height: 250px; 
+            /* 渐变逻辑：从透明 -> 背景色 */
+            background: linear-gradient(to bottom, transparent 0%, var(--bg-color) 100%);
+            z-index: 5; /* 位于媒体层之上 */
+            pointer-events: none;
+        }
+
+        /* --- HERO TEXT (中间的大标题) --- */
+        .hero-content { 
+            position: relative; 
+            z-index: 10; /* [修改] 提高层级，确保在渐变层之上(如果需要)或者之下 */
+            text-align: center; pointer-events: none;
+            transition: opacity 0.8s ease, transform 0.8s ease; mix-blend-mode: overlay; 
+            /* [自定义修改：文字位置 - 向上移动] */
+            transform: translateY(-80px);
+        }
+        .hero-content.ui-hidden { opacity: 0; transform: translateY(-50px); }
+        
+        .hero-title { 
+            /* [自定义修改 10：主标题文字大小] */
+            font-size: 90px; 
+            font-weight: 300; letter-spacing: -3px; color: #fff; 
+            margin-bottom: 20px; text-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+        }
+        .hero-subtitle { 
+            /* [自定义修改 11：副标题文字大小] */
+            font-size: 14px; 
+            color: rgba(255,255,255,0.85); letter-spacing: 4px; text-transform: uppercase; 
+        }
+
+        /* --- WORKS LIST (作品列表) --- */
+        .works-section { padding: 160px 5vw; position: relative; z-index: 10; }
+        .section-header { margin-bottom: 120px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .section-title-large { 
+            font-size: 24px; 
+            font-weight: 200; 
+            color: #fff; 
+            letter-spacing: 1px;
+            /* [自定义修改：Selected Works 字体] */
+            font-family: 'Commissioner', sans-serif;
+        }
+        
+        /* [自定义修改 12：网格列数] */
+        .gallery-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 40px; }
+        
+        .work-item { display: flex; flex-direction: column; gap: 20px; cursor: pointer; }
+        
+        /* [自定义修改 13：作品图比例] */
+        .work-img-wrapper { width: 100%; background-color: #222; aspect-ratio: 4/3; }
+        .work-img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            /* [自定义修改：图片裁剪位置] center = 居中, top = 顶部, bottom = 底部, left = 左侧, right = 右侧 */
+            object-position: center; 
+            opacity: 0.8; 
+            transition: 0.8s cubic-bezier(0.19, 1, 0.22, 1); 
+        }
+        .work-item:hover .work-img { transform: scale(1.05); opacity: 1; }
+        
+        .work-title { font-size: 16px; font-weight: bold; color: #fff; margin-top: 15px; }
+        .work-category { font-size: 12px; color: rgba(255,255,255,0.6); text-transform: uppercase; }
+        
+        /* [自定义修改 14：作品位置排版] */
+        .item-1 { 
+            grid-column: 2 / span 6; 
+        }
+        .item-1 .work-img { 
+            /* [自定义修改：第一个作品图片裁剪位置] */
+            object-position: center; 
+        }
+        
+        .item-2 { 
+            grid-column: 9 / span 4; 
+            margin-top: 200px; 
+        }
+        .item-2 .work-img-wrapper { 
+            aspect-ratio: 3/4; 
+        }
+        .item-2 .work-img { 
+            /* [自定义修改：第二个作品图片裁剪位置] */
+            object-position: center; 
+        }
+        
+        .item-3 { 
+            grid-column: 1 / span 7; 
+            margin-top: 5px; 
+        }
+        .item-3 .work-img-wrapper { 
+            aspect-ratio: 16/9; 
+        }
+        .item-3 .work-img { 
+            /* [自定义修改：第三个作品图片裁剪位置] */
+            object-position: center; 
+        } 
+
+    </style>
+</head>
+<body id="page-home">
+
+    <!-- HEADER -->
+    <header id="main-header">
+        <!-- [自定义修改 15：替换 Logo 文字或图片] -->
+        <a href="index.html" class="logo">屿&nbsp;&nbsp;&nbsp;&nbsp;Lyuuxina</a>
+        
+        <nav class="nav">
+            <div class="nav-item-wrapper"><a href="index.html" class="nav-link active">Home</a></div>
+            
+            <!-- Work Dropdown -->
+            <div class="nav-item-wrapper">
+                <a href="index.html" class="nav-link">Work</a>
+                <div class="dropdown">
+                    <div class="dropdown-menu">
+                        <!-- [自定义修改 16：导航链接 (Work)] -->
+                        <a href="WDindex .html" class="dropdown-item">Design</a>
+                        <a href="WISindex.html" class="dropdown-item">Installation</a>
+                        <!-- Digital Art 指向 Windex.html -->
+                        <a href="Windex.html" class="dropdown-item">Digital Art</a>
+                        <a href="illustration.html" class="dropdown-item">Illustration</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- About Dropdown -->
+            <div class="nav-item-wrapper">
+                <a href="Aindex.html" class="nav-link">About</a>
+                <div class="dropdown">
+                    <div class="dropdown-menu">
+                        <!-- [自定义修改 17：导航链接 (About)] -->
+                        <a href="Aindex.html#bio" class="dropdown-item">Biography</a>
+                        <a href="Aindex.html#education" class="dropdown-item">Education</a>
+                        <a href="Aindex.html#experience" class="dropdown-item">Experience</a>
+                        <a href="Aindex.html#award" class="dropdown-item">Award</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="nav-item-wrapper"><a href="Cindex.html" class="nav-link">Contact</a></div>
+        </nav>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="hero" id="hero-section">
+        <div class="hero-bg-container">
+            <!-- 底层：模糊层 (JS 自动填充 src) -->
+            <div class="blur-layer-container">
+                <img id="blur-img" class="hero-media" src="" alt="Background">
+                <video id="blur-video" class="hero-media hidden" loop muted playsinline><source src="" type="video/mp4"></video>
+            </div>
+            
+            <!-- 中层：噪点 -->
+            <div class="hero-noise-overlay"></div>
+            
+            <!-- 顶层：清晰层 (JS 自动填充 src) -->
+            <div class="clear-layer-container" id="hero-bg-clear">
+                <img id="clear-img" class="hero-media" src="" alt="Background Clear">
+                <video id="clear-video" class="hero-media hidden" loop muted playsinline><source src="" type="video/mp4"></video>
+            </div>
+        </div>
+        
+        <!-- [新增] 底部渐变过渡层 -->
+        <div class="hero-gradient-overlay"></div>
+        
+        <div class="hero-content" id="hero-content">
+            <!-- [自定义修改 18：首页标题文字] -->
+            <h1 class="hero-title"><br></h1>
+            <p class="hero-subtitle">Let's live for the moment, however ephemeral.</p>
+            <p class="hero-subtitle" style="margin-top: 20px;">急景殘年，活在當下。惟一瞬，既逝。</p>
+        </div>
+    </section>
+
+    <!-- WORKS -->
+    <section class="works-section">
+        <div class="section-header">
+            <!-- [自定义修改 19：作品列表标题] -->
+            <h2 class="section-title-large">艺&nbsp;&nbsp;&nbsp;&nbsp;Work Collection</h2>
+            <span style="font-size: 12px; color: #fff; font-family: 'Commissioner', sans-serif; font-weight: 200; letter-spacing: 1px;">(2024 - 2025)</span>
+        </div>
+        <div class="gallery-grid">
+            <!-- Work Item 1 -->
+            <a href="photograph.html" class="work-item item-1">
+                <!-- [自定义修改 20：替换作品封面图] -->
+                <div class="work-img-wrapper">
+                    <img src="image/jian.png" alt="Silent Reflection" class="work-img">
+                </div>
+                <div class="work-title">Vegetarian</div>
+                <div class="work-category">Digital Art</div>
+            </a>
+            <!-- Work Item 2 -->
+            <a href="WISindex.html" class="work-item item-2">
+                <div class="work-img-wrapper">
+                    <img src="image/zhuanzhi1.jpg" alt="Silent Reflection" class="work-img">
+                </div>
+                <div class="work-title">Pollination Protocol</div>
+                <div class="work-category">Installation</div>
+            </a>
+            <!-- Work Item 3（保持为普通 Digital Art 卡片，不跳转到 Windex.html） -->
+            <a href="digital-art.html" class="work-item item-3">
+                <div class="work-img-wrapper">
+                    <img src="image/moshui.png" alt="Silent Reflection" class="work-img">
+                </div>
+                <div class="work-title">FREE but WILL</div>
+                <div class="work-category">Digital Art</div>
+            </a>
+        </div>
+    </section>
+
+    <script>
+        // =================================================================
+        // [自定义修改 21：配置首页背景素材]
+        // 这里是控制背景是图片还是视频的地方
+        // =================================================================
+        const config = {
+            // [开关] true = 启用视频背景, false = 启用图片背景
+            useVideo: false, 
+
+            // [图片链接] 支持本地路径 (例如 'assets/bg.jpg') 或 网络链接
+            imageSource: "image/quen.png",
+            
+            // [视频链接] 支持 .mp4, .webm
+            videoSource: "https://cdn.coverr.co/videos/coverr-ink-in-water-2633/1080p.mp4"
+        };
+
+        // --- 初始化逻辑 (无需修改) ---
+        document.addEventListener("DOMContentLoaded", () => {
+            const blurImg = document.getElementById('blur-img');
+            const clearImg = document.getElementById('clear-img');
+            const blurVideo = document.getElementById('blur-video');
+            const clearVideo = document.getElementById('clear-video');
+
+            if (config.useVideo) {
+                blurImg.classList.add('hidden');
+                clearImg.classList.add('hidden');
+                blurVideo.classList.remove('hidden');
+                clearVideo.classList.remove('hidden');
+                blurVideo.querySelector('source').src = config.videoSource;
+                clearVideo.querySelector('source').src = config.videoSource;
+                blurVideo.load(); clearVideo.load();
+                blurVideo.play(); clearVideo.play();
+                syncVideos();
+            } else {
+                blurImg.classList.remove('hidden');
+                clearImg.classList.remove('hidden');
+                blurVideo.classList.add('hidden');
+                clearVideo.classList.add('hidden');
+                blurImg.src = config.imageSource;
+                clearImg.src = config.imageSource;
+            }
+            
+            const heroSection = document.getElementById('hero-section');
+            const heroClearLayer = document.getElementById('hero-bg-clear');
+            heroSection.addEventListener('mousemove', (e) => {
+                heroClearLayer.style.setProperty('--mouse-x', e.clientX + 'px');
+                heroClearLayer.style.setProperty('--mouse-y', e.clientY + 'px');
+            });
+            
+            const header = document.getElementById('main-header');
+            const heroContent = document.getElementById('hero-content');
+            window.addEventListener('scroll', () => {
+                const scrollY = window.scrollY;
+                if (scrollY > window.innerHeight * 0.8) document.body.classList.add('light-mode');
+                else document.body.classList.remove('light-mode');
+                
+                if (scrollY > 50) {
+                    header.classList.add('ui-hidden');
+                    heroContent.classList.add('ui-hidden');
+                } else {
+                    header.classList.remove('ui-hidden');
+                    heroContent.classList.remove('ui-hidden');
+                }
+            });
+        });
+
+        function syncVideos() {
+            const v1 = document.getElementById('blur-video');
+            const v2 = document.getElementById('clear-video');
+            setInterval(() => {
+                if (Math.abs(v1.currentTime - v2.currentTime) > 0.1) {
+                    v2.currentTime = v1.currentTime;
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
