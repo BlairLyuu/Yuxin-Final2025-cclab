@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Unified Header</title>
+    
+    <!-- [自定义修改：引入 Google Fonts] -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* [自定义修改：引入繁体字体] */
+        @font-face {
+            font-family: 'SourceHanSansTW';
+            src: url('font/Source Han Sans HC VF ExtraLight.ttf') format('truetype');
+            font-weight: 200;
+            font-style: normal;
+        }
+        
+        /* =================================================================
+           [自定义修改 1：页面基础样式]
+           ================================================================= */
+        :root {
+            --bg-color: #fcfcfc;          
+            --text-main: #333333;
+            --text-sub: #8c8c8c;
+            --main-font: 'Helvetica Neue', Arial, sans-serif;
+            
+            --glass-bg: rgba(20, 20, 20, 0.85); 
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            background-color: var(--bg-color); 
+            font-family: var(--main-font); 
+            color: var(--text-main); 
+            scroll-behavior: smooth; 
+        }
+        
+        a { text-decoration: none; color: inherit; }
+
+        /* [自定义修改 2：Header 样式 - 针对 About 页调整] */
+        header {
+            position: fixed; top: 0; left: 0; width: 100%;
+            padding: 20px 5vw;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 1000;
+            /* 移除 mix-blend-mode，改为实色背景增加清晰度 */
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px);
+            color: #1a1a1a; 
+            box-shadow: 0 2px 20px rgba(0,0,0,0.05);
+        }
+        
+        /* 调整导航链接颜色以匹配浅色背景 */
+        .nav-link {
+            color: #666; 
+        }
+        .nav-link:hover, .nav-link.active { color: #000; opacity: 1; }
+        .nav-link::after { background: #000; }
+
+        .logo { 
+            font-weight: 200; 
+            font-size: 24px; 
+            letter-spacing: 1px; 
+            background: transparent; 
+            display: block; 
+            /* [自定义修改：Logo 字体 - 使用繁体字体] */
+            font-family: 'SourceHanSansTW', 'Commissioner', sans-serif;
+        }
+
+        .nav { display: flex; gap: 30px; align-items: center; transform: scale(0.9); transform-origin: right center; }
+        .nav-item-wrapper { position: relative; height: 40px; display: flex; align-items: center; }
+
+        /* [修正] 移除重复的 nav-link 定义，保留上面的深色文字定义 */
+        /* 
+        .nav-link {
+            font-size: 14px; font-weight: 500; letter-spacing: 0.5px;
+            color: rgba(255,255,255,0.8); transition: opacity 0.3s ease;
+            position: relative; padding: 0; background: transparent !important; border: none !important; 
+        }
+        .nav-link:hover, .nav-link.active { color: #fff; opacity: 1; }
+        .nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0%; height: 1px; background: #fff; transition: width 0.3s ease; }
+        .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+        */
+        
+        /* 补充 nav-link 基础样式 (字体大小等)，颜色已在上面定义 */
+        .nav-link {
+            font-size: 14px; font-weight: 500; letter-spacing: 0.5px;
+            transition: color 0.3s ease, opacity 0.3s ease;
+            position: relative; padding: 0; background: transparent !important; border: none !important; 
+            text-decoration: none;
+        }
+        .nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0%; height: 1px; background: #000; transition: width 0.3s ease; }
+        .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+        .dropdown { position: absolute; top: 100%; left: 50%; transform: translateX(-50%) translateY(10px); padding-top: 8px; opacity: 0; visibility: hidden; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .nav-item-wrapper:hover .dropdown { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+        .dropdown-menu { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 0; min-width: 70px; border: 1px solid var(--glass-border); border-radius: 0; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.5); mix-blend-mode: normal; }
+        .dropdown-item { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.6); padding: 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); transition: all 0.2s; border-radius: 0; }
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-item:hover { color: #fff; background: rgba(255,255,255,0.1); padding-left: 24px; }
+
+        /* --- About 页面特定布局 --- */
+        /* 改为 1/3 布局 (33% 左侧, 剩余右侧) */
+        .about-layout { display: grid; grid-template-columns: 33.33vw 1fr; min-height: 100vh; }
+        
+        .about-visual-col { 
+            position: relative; 
+            height: auto; /* 高度随图片撑开 */
+            border-right: 1px solid #f0f0f0;
+        }
+        
+        /* 图片改为可滑动 (非 sticky) */
+        .about-img-element { 
+            width: 100%; 
+            height: auto; 
+            display: block;
+            /* 如果希望图片至少占满一屏，可以加 min-height */
+            min-height: 100vh;
+            object-fit: cover;
+        }
+        
+        .about-img { display: none; } /* 禁用原来的背景图类 */
+        
+        .about-content-col { padding: 160px 5vw 160px 5vw; display: flex; gap: 40px; position: relative; }
+        
+        .sub-nav {
+            position: sticky; top: 160px; height: fit-content; display: flex; flex-direction: column; gap: 24px;
+            width: 120px; border-left: 1px solid #e6e6e6; padding-left: 20px;
+        }
+        .sub-nav-link { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #8c8c8c; transition: all 0.3s; }
+        .sub-nav-link:hover, .sub-nav-link.active { color: #1a1a1a; font-weight: bold; padding-left: 8px; }
+
+        .content-scroll { flex: 1; display: flex; flex-direction: column; gap: 120px; }
+        section { scroll-margin-top: 160px; }
+        .section-title { font-size: 14px; font-weight: bold; margin-bottom: 32px; color: #1a1a1a; text-transform: uppercase; }
+        
+        /* [自定义修改 4：正文文字大小] */
+        .text-content p { font-size: 15px; line-height: 1.7; color: #333; margin-bottom: 24px; }
+        .text-list { list-style: none; padding: 0; }
+        .text-list li { font-size: 15px; line-height: 1.8; border-bottom: 1px solid #e6e6e6; padding: 8px 0; display: flex; justify-content: space-between; color: #333; }
+        .list-year { font-weight: bold; color: #8c8c8c; width: 80px; flex-shrink: 0; }
+
+        /* [自定义修改 5：Experience 列表样式] */
+        .exp-list { display: flex; flex-direction: column; gap: 32px; }
+        .exp-item { border-bottom: 1px solid #e6e6e6; padding-bottom: 24px; }
+        .exp-item:last-child { border-bottom: none; }
+        
+        .exp-header { display: grid; grid-template-columns: 2fr 3fr 1fr; align-items: baseline; margin-bottom: 12px; }
+        .exp-role { font-weight: 600; font-size: 16px; color: #000; }
+        .exp-place { font-size: 15px; color: #555; font-style: italic; }
+        .exp-time { font-size: 14px; color: #8c8c8c; text-align: right; }
+        
+        .exp-desc { list-style: disc; padding-left: 18px; margin: 0; }
+        .exp-desc li { font-size: 14px; line-height: 1.6; color: #444; margin-bottom: 6px; padding: 0; border: none; display: list-item; }
+
+        /* [自定义修改 6：Biography 样式] */
+        .bio-header { margin-bottom: 32px; }
+        .bio-name { font-size: 32px; font-weight: 300; letter-spacing: 1px; margin-bottom: 8px; font-family: 'Commissioner', sans-serif; }
+        .bio-date { font-size: 14px; color: #8c8c8c; letter-spacing: 1px; }
+        
+        .skills-title { font-weight: bold; margin-top: 32px; margin-bottom: 16px; display: block; }
+        .skills-list { list-style: none; padding: 0; margin-top: 16px; }
+        .skills-list li { position: relative; padding-left: 16px; margin-bottom: 8px; font-size: 15px; color: #444; line-height: 1.6; }
+        .skills-list li::before { content: '•'; position: absolute; left: 0; color: #8c8c8c; }
+
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <a href="index.html" class="logo">屿&nbsp;&nbsp;&nbsp;&nbsp;Lyuuxina</a>
+        <nav class="nav">
+            <div class="nav-item-wrapper"><a href="index.html" class="nav-link">Home</a></div>
+            <div class="nav-item-wrapper">
+                <a href="index.html" class="nav-link">Work</a>
+                <div class="dropdown">
+                    <div class="dropdown-menu">
+                        <a href="WDindex .html" class="dropdown-item">Design</a>
+                        <a href="WISindex.html" class="dropdown-item">Installation</a>
+                        <a href="Windex.html" class="dropdown-item">Digital Art</a>
+                        <a href="illustration.html" class="dropdown-item">Illustration</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="nav-item-wrapper">
+                <!-- [修正] About 链接指向当前页面 Aindex.html -->
+                <a href="Aindex.html" class="nav-link active">About</a>
+                <div class="dropdown">
+                    <div class="dropdown-menu">
+                        <a href="#bio" class="dropdown-item">Biography</a>
+                        <a href="#education" class="dropdown-item">Education</a>
+                        <a href="#experience" class="dropdown-item">Experience</a>
+                        <a href="#award" class="dropdown-item">Award</a>
+                    </div>
+                </div>
+            </div>
+            <!-- [修正] Contact 链接指向 Cindex.html -->
+            <div class="nav-item-wrapper"><a href="Cindex.html" class="nav-link">Contact</a></div>
+        </nav>
+    </header>
+
+    <div class="about-layout">
+        <div class="about-visual-col">
+            <!-- [自定义修改 3：About 左侧大图 - 改为图片元素以便滑动] -->
+            <img src="image/chang2.jpg" class="about-img-element" alt="Profile Image">
+        </div>
+
+        <div class="about-content-col">
+            <div class="content-scroll">
+                
+                <!-- 1. Biography -->
+                <section id="bio">
+                    <div class="section-title">Biography</div>
+                    <div class="text-content">
+                        <!-- [自定义修改 6：名字和日期] -->
+                        <div class="bio-header">
+                            <h2 class="bio-name">Yuxin Liu 刘钰昕 </h2>
+                            <span class="bio-date">2006.07</span>
+                        </div>
+
+                        <!-- [自定义修改 7：个人简介] -->
+                        <p>Emerging designer and curator currently pursuing a BFA in Design and Technology with a minor in Curatorial Studies at Parsons School of Design in New York. My practice sits at the intersection of digital media, visual storytelling, and exhibition-making, with a particular interest in how art, technology, and narrative shape audience experience.</p>
+                        
+                        <p>I have hands-on gallery experience in both the U.S. and China, working across exhibition production, visitor engagement, artist-facing coordination, and social media strategy. In parallel, I have contributed to independent film production, developing skills in proposal writing, fundraising support, and cross-disciplinary project management.</p>
+                        
+                        <span class="skills-title">Key skills and competencies:</span>
+                        <ul class="skills-list">
+                            <li>Exhibition planning, curatorial research, and narrative-driven spatial design</li>
+                            <li>Visual communication: Adobe Photoshop, Illustrator, InDesign, Premiere Pro, After Effects</li>
+                            <li>Creative technology: TouchDesigner, Blender; familiarity with AI-assisted image and video tools (e.g., Stable Diffusion, Kaiber AI)</li>
+                            <li>Content strategy and branding for Xiaohongshu and Instagram</li>
+                            <li>Bilingual (Mandarin / English) communication, cross-cultural collaboration, and stakeholder coordination</li>
+                        </ul>
+                    </div>
+                </section>
+                
+                <!-- 2. Education -->
+                <section id="education">
+                    <div class="section-title">Education</div>
+                    <div class="text-content">
+                        <ul class="text-list">
+                            <!-- [自定义修改 7：教育经历] -->
+                            <li><span class="list-year">2021-2024</span><span>High School, Xi'an Tieyi High School
+                            </span></li>
+                            <li><span class="list-year">2024-2028</span><span>BFA, Parsons School of Design</span></li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- 3. Experience -->
+                <section id="experience">
+                    <div class="section-title">Experience</div>
+                    <div class="text-content">
+                        <div class="exp-list">
+                            <!-- Item 1 -->
+                            <div class="exp-item">
+                                <div class="exp-header">
+                                    <span class="exp-role">Gallery Intern</span>
+                                    <span class="exp-place">Artech Gallery (NextG), NY</span>
+                                    <span class="exp-time">Apr - Jul 2025</span>
+                                </div>
+                                <ul class="exp-desc">
+                                    <li>Supported exhibition production: placement, signage, and spatial layout.</li>
+                                    <li>Assisted curatorial research for exhibition narratives and sub-brand positioning.</li>
+                                    <li>Introduced artworks to visitors; coordinated volunteer shifts and operations.</li>
+                                    <li>Contributed to Xiaohongshu content planning and digital outreach.</li>
+                                </ul>
+                            </div>
+
+                            <!-- Item 2 -->
+                            <div class="exp-item">
+                                <div class="exp-header">
+                                    <span class="exp-role">Pre-production Producer</span>
+                                    <span class="exp-place">Independent Film: Null, Being (Remote)</span>
+                                    <span class="exp-time">May - Jul 2025</span>
+                                </div>
+                                <ul class="exp-desc">
+                                    <li>Drafted project proposal: narrative, visual direction, and budget.</li>
+                                    <li>Prepared pitch decks for fundraising and partnerships.</li>
+                                    <li>Coordinated festival submission strategies (Berlinale, Cannes, FIRST).</li>
+                                </ul>
+                            </div>
+
+                            <!-- Item 3 -->
+                            <div class="exp-item">
+                                <div class="exp-header">
+                                    <span class="exp-role">Gallery Intern</span>
+                                    <span class="exp-place">Lalian Gallery, Xi’an</span>
+                                    <span class="exp-time">Jun - Aug 2024</span>
+                                </div>
+                                <ul class="exp-desc">
+                                    <li>Assisted with exhibition design and visitor materials.</li>
+                                    <li>Managed Xiaohongshu account aligning with exhibition timelines.</li>
+                                    <li>Maintained client records; supported sales and follow-ups.</li>
+                                    <li>Participated in curatorial discussions for public-facing narratives.</li>
+                                </ul>
+                            </div>
+
+                            <!-- Item 4 -->
+                            <div class="exp-item">
+                                <div class="exp-header">
+                                    <span class="exp-role">Curatorial Project Lead</span>
+                                    <span class="exp-place">Xi’an Tieyi High School Arts Festival</span>
+                                    <span class="exp-time">Mar 2023</span>
+                                </div>
+                                <ul class="exp-desc">
+                                    <li>Co-led planning for the 33rd Campus Culture and Arts Festival.</li>
+                                    <li>Oversaw exhibition layout and team task allocation.</li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Item 5 -->
+                            <div class="exp-item">
+                                <div class="exp-header">
+                                    <span class="exp-role">Teaching Assistant (Volunteer)</span>
+                                    <span class="exp-place">Jingkai Special Education School, Xi’an</span>
+                                    <span class="exp-time">Jun - Nov 2023</span>
+                                </div>
+                                <ul class="exp-desc">
+                                    <li>Supported daily teaching routines and student safety.</li>
+                                    <li>Delivered adaptable art activities with empathy.</li>
+                                </ul>
+                            </div>
+
+                             <!-- Item 6 -->
+                             <div class="exp-item">
+                                <div class="exp-header">
+                                    <span class="exp-role">Art Teaching Assistant</span>
+                                    <span class="exp-place">Yi jia Yi Children’s Art Studio, Xi’an</span>
+                                    <span class="exp-time">Jun 2023</span>
+                                </div>
+                                <ul class="exp-desc">
+                                    <li>Assisted in delivering children’s art classes and maintaining structure.</li>
+                                </ul>
+                            </div>
+
+                             <!-- Item 7 -->
+                             <div class="exp-item">
+                                <div class="exp-header">
+                                    <span class="exp-role">Volunteer</span>
+                                    <span class="exp-place">Nat. Youth Model CPPCC Proposal Showcase</span>
+                                    <span class="exp-time">Jul 2024</span>
+                                </div>
+                                <ul class="exp-desc">
+                                    <li>Provided logistical support; recognized as Outstanding Volunteer.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. Award -->
+                <section id="award">
+                    <div class="section-title">Award</div>
+                    <div class="text-content">
+                        <ul class="text-list">
+                            <!-- [自定义修改 9：奖项] -->
+                            <li><span class="list-year">2025</span><span>Third Prize, Parsons School of Design GIF Competition</span></li>
+                            <li><span class="list-year">2025</span><span>Selected Work, First Year Journal (Parsons Outstanding Works)</span></li>
+                            <li><span class="list-year">2024</span><span>Outstanding Volunteer, National Youth Model CPPCC Showcase</span></li>
+                        </ul>
+                    </div>
+                </section>
+                
+                <div style="height: 20vh;"></div> 
+            </div>
+
+            <!-- 右侧二级导航 -->
+            <aside class="sub-nav">
+                <!-- [自定义修改 10：右侧导航链接] -->
+                <a href="#bio" class="sub-nav-link">Biography</a>
+                <a href="#education" class="sub-nav-link">Education</a>
+                <a href="#experience" class="sub-nav-link">Experience</a>
+                <a href="#award" class="sub-nav-link">Award</a>
+            </aside>
+        </div>
+    </div>
+</body>
+</html>
